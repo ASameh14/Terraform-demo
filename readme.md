@@ -20,3 +20,23 @@
   ~ "Role" = "Backend" -> "Foundation"
   Plan: 0 to add, 1 to change, 0 to destroy.
   ```
+  ## Phase 2 Owner: Amr (Multi-Tenant Scale & State Resilience)
+
+---
+
+## Deliverable 3: Shared Remote State Collaboration & Resource Isolation
+- **Action:** Cloned the shared repository, established connection to the existing live S3 backend via `terraform init`, and created a new file named `vpc_amr.tf`.
+- **Implementation:** Isolated infrastructure tracking by giving the resource a unique local HCL name (`resource "aws_vpc" "amr"`) and allocating a separate CIDR block (`10.1.0.0/16`) to avoid state collisions or resource overwriting with Sameh's VPC.
+- **Result:** Successfully executed `terraform apply`. Both VPCs now coexist happily under management within the same shared `terraform.tfstate` file.
+
+## Deliverable 4: Concurrent Execution & Concurrency Lock Test
+- **Action:** Tested the DynamoDB locking mechanisms under a real-world multi-engineer collision simulation by starting an active `apply` while a teammate simultaneously attempted a write execution.
+- **Observation:** The concurrent execution was immediately blocked and safely rejected by DynamoDB. The blocked engineer received the following explicit error message:
+  ```text
+  Error: Error acquiring the state lock
+  Error message: ConditionalCheckFailedException: The conditional request failed
+  Lock Info:
+    ID:        <UUID-STRING>
+    Path:      sameh-amr-mamdouh-project/day1/terraform.tfstate
+    Operation: OperationTypeApply
+    Who:       amr@desktop

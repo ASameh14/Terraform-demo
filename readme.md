@@ -40,3 +40,56 @@
     Path:      sameh-amr-mamdouh-project/day1/terraform.tfstate
     Operation: OperationTypeApply
     Who:       amr@desktop
+
+
+## Phase 3 Owner: Mamdouh (State Surgery & State Inspection)
+
+## Deliverable 5: Third VPC Deployment & Dependency Graph Analysis
+
+**Action:** Cloned the shared repository, initialized Terraform against the existing remote S3 backend, and created vpc_mamdouh.tf containing a new VPC resource with CIDR block 10.2.0.0/16 and tags identifying ownership.
+
+**Result:** Successfully executed terraform apply. The shared remote state now tracked three independent VPC resources managed by different team members.
+
+## Graph Analysis:
+Executed terraform graph to inspect Terraform's dependency graph. The output displayed all VPC resources as separate nodes with no dependency arrows between them. This indicates that Terraform recognizes each VPC as an independent resource with no references or relationships to the others. Since VPC resources do not depend on one another, Terraform can create, update, or destroy them independently.
+
+## Deliverable 6: State Move (state mv) Resource Rename Test
+
+**Action:** Renamed the local Terraform resource name for the VPC in the configuration file and executed terraform state mv to update the resource address stored in the state file.
+
+## Example:
+terraform state mv aws_vpc.mamdouh aws_vpc.primary
+
+**Observation:** The state entry was successfully updated without modifying the actual AWS VPC. A subsequent terraform plan reported no infrastructure changes, confirming that Terraform correctly understood the resource had only been renamed within the configuration.
+
+## Result:
+Plan: 0 to add, 0 to change, 0 to destroy.
+
+## Deliverable 7: State Removal (state rm) Test
+
+**Action:** Executed terraform state rm against the VPC resource.
+
+**Observation:** Terraform removed the resource from the state file while leaving the VPC fully intact within AWS. Verification through the AWS Console confirmed that the VPC continued to exist and operate normally.
+
+## Cleanup Decision:
+The VPC was re-imported into Terraform state using terraform import to avoid leaving unmanaged infrastructure and to maintain consistency within the shared project state.
+
+**Deliverable 8:** Raw State Inspection (state pull)
+
+**Action:** Executed terraform state pull to retrieve the raw JSON state directly from the remote S3 backend and reviewed its contents.
+
+## Observation:
+The state file contained detailed metadata for each tracked VPC, including:
+
+* Resource address and type
+* AWS VPC ID
+* ARN (Amazon Resource Name)
+* CIDR block
+* Tags
+* Owner information
+* Provider metadata
+* Terraform schema version
+* Resource instance attributes
+
+## Conclusion:
+The exercise demonstrated how Terraform state can be safely manipulated without affecting live infrastructure, how resource addresses can be updated using state mv, how resources can be detached from management using state rm, and how the complete infrastructure record can be inspected directly through state pull.
